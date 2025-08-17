@@ -10,11 +10,12 @@ import 'screens/profile_screen.dart';
 import 'services/auth_service.dart';
 import 'services/event_service.dart';
 import 'services/storage_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  runApp(MyApp(prefs: prefs));
+  await dotenv.load(fileName: ".env");
+  final apiUrl = dotenv.env['API_BASE_URL']!;
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
