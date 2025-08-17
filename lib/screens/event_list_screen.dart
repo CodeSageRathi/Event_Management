@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/event.dart';
-import '../../services/event_service.dart';
+import '../../models/event.dart'
+    hide EventService; // Hide EventService from models
+import '../../services/event_service.dart'
+    as event_service; // Add prefix for service
 import 'event_detail_screen.dart';
 import 'profile_screen.dart';
 
 class EventListScreen extends StatefulWidget {
-  const EventListScreen({Key? key}) : super(key: key);
+  const EventListScreen({super.key}); // Use super.key
 
   @override
   _EventListScreenState createState() => _EventListScreenState();
@@ -18,10 +20,20 @@ class _EventListScreenState extends State<EventListScreen> {
   @override
   void initState() {
     super.initState();
-    _eventsFuture = Provider.of<EventService>(
-      context,
-      listen: false,
-    ).fetchEvents();
+    // Access Provider safely using WidgetsBinding
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadEvents();
+    });
+  }
+
+  void _loadEvents() {
+    setState(() {
+      _eventsFuture = Provider.of<event_service.EventService>(
+        // Use prefixed name
+        context,
+        listen: false,
+      ).fetchEvents();
+    });
   }
 
   @override

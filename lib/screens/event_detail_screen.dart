@@ -7,7 +7,7 @@ import '../../services/storage_service.dart';
 class EventDetailScreen extends StatelessWidget {
   final Event event;
 
-  const EventDetailScreen({Key? key, required this.event}) : super(key: key);
+  const EventDetailScreen({super.key, required this.event}); // Fixed key
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +38,17 @@ class EventDetailScreen extends StatelessWidget {
                     child: const Icon(Icons.event, size: 50),
                   ),
             const SizedBox(height: 16),
-            Text(event.title, style: Theme.of(context).textTheme.headline5),
+            Text(
+              event.title,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ), // Updated
             const SizedBox(height: 8),
             Text('Date: ${event.date}'),
             Text('Location: ${event.location}'),
             const SizedBox(height: 16),
             Text(
               event.description,
-              style: Theme.of(context).textTheme.bodyText2,
+              style: Theme.of(context).textTheme.bodyMedium, // Updated
             ),
             const SizedBox(height: 32),
             Center(

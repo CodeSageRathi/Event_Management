@@ -22,7 +22,6 @@ class AuthService with ChangeNotifier {
   }
 
   Future<void> login(String email, String password) async {
-    // Dummy validation
     if (email.isNotEmpty && password.isNotEmpty) {
       _currentUser = User(email: email);
       await prefs.setString('userEmail', email);
@@ -33,7 +32,6 @@ class AuthService with ChangeNotifier {
   }
 
   Future<void> signup(String email, String password) async {
-    // Dummy signup
     _currentUser = User(email: email);
     await prefs.setString('userEmail', email);
     notifyListeners();

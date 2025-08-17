@@ -1,12 +1,11 @@
+import 'package:event_explorer/screens/event_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/event.dart';
 import '../../services/auth_service.dart';
 import '../../services/storage_service.dart';
-import '../event_detail_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key}); // Fixed key
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +31,12 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Text(
               'Email: ${authService.currentUser!.email}',
-              style: Theme.of(context).textTheme.headline6,
+              style: Theme.of(context).textTheme.headlineSmall, // Updated
             ),
             const SizedBox(height: 20),
             Text(
               'Registered Events:',
-              style: Theme.of(context).textTheme.subtitle1,
+              style: Theme.of(context).textTheme.titleMedium, // Updated
             ),
             const Divider(),
             Expanded(

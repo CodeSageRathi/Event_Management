@@ -6,7 +6,6 @@ class StorageService with ChangeNotifier {
   final Map<String, List<Event>> _userEvents = {};
   final List<User> _registeredUsers = [];
 
-  // Event-related methods
   List<Event> getRegisteredEvents(String email) {
     return _userEvents[email] ?? [];
   }
@@ -24,7 +23,6 @@ class StorageService with ChangeNotifier {
     notifyListeners();
   }
 
-  // User-related methods (for auth persistence)
   void saveUser(User user) {
     if (!_registeredUsers.any((u) => u.email == user.email)) {
       _registeredUsers.add(user);
@@ -32,13 +30,13 @@ class StorageService with ChangeNotifier {
   }
 
   User? getUser(String email) {
-    return _registeredUsers.firstWhere(
-      (user) => user.email == email,
-      orElse: () => User(email: '', password: null),
-    );
+    try {
+      return _registeredUsers.firstWhere((user) => user.email == email);
+    } catch (e) {
+      return null;
+    }
   }
 
-  // For debugging
   void printAllData() {
     if (kDebugMode) {
       print('=== Storage Contents ===');
