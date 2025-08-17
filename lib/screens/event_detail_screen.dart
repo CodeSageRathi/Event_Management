@@ -1,17 +1,18 @@
-// screens/event_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/event.dart';
-import '../services/storage_service.dart';
-import '../services/auth_service.dart';
+import '../../models/event.dart';
+import '../../services/auth_service.dart';
+import '../../services/storage_service.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final Event event;
 
-  const EventDetailScreen({super.key, required this.event});
+  const EventDetailScreen({Key? key, required this.event}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(title: Text(event.title)),
       body: SingleChildScrollView(
@@ -20,34 +21,51 @@ class EventDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             event.imageUrl.isNotEmpty
-                ? Image.network(event.imageUrl)
-                : const Icon(Icons.event, size: 200),
+                ? Image.network(
+                    event.imageUrl,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 200,
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.error),
+                    ),
+                  )
+                : Container(
+                    height: 200,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.event, size: 50),
+                  ),
             const SizedBox(height: 16),
-            Text(
-              event.title,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
+            Text(event.title, style: Theme.of(context).textTheme.headline5),
             const SizedBox(height: 8),
             Text('Date: ${event.date}'),
             Text('Location: ${event.location}'),
             const SizedBox(height: 16),
             Text(
               event.description,
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyText2,
             ),
             const SizedBox(height: 32),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  final userEmail = Provider.of<AuthService>(context, listen: false)
-                      .currentUserEmail;
-                  if (userEmail != null) {
-                    Provider.of<StorageService>(context, listen: false)
-                        .registerForEvent(userEmail, event);
+                  if (authService.currentUser == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Registered for event!')),
+                      const SnackBar(content: Text('Please login first')),
                     );
+                    return;
                   }
+
+                  Provider.of<StorageService>(
+                    context,
+                    listen: false,
+                  ).registerForEvent(authService.currentUser!.email, event);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Registered for event!')),
+                  );
                 },
                 child: const Text('Register for Event'),
               ),
@@ -56,24 +74,5 @@ class EventDetailScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-// services/storage_service.dart
-import 'package:flutter/material.dart';
-import '../models/event.dart';
-
-class StorageService {
-  final Map<String, List<Event>> _userEvents = {};
-
-  List<Event> getRegisteredEvents(String userEmail) {
-    return _userEvents[userEmail] ?? [];
-  }
-
-  void registerForEvent(String userEmail, Event event) {
-    if (!_userEvents.containsKey(userEmail)) {
-      _userEvents[userEmail] = [];
-    }
-    _userEvents[userEmail]!.add(event);
   }
 }

@@ -1,13 +1,12 @@
-// screens/event_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/event.dart';
-import '../services/event_service.dart';
+import '../../models/event.dart';
+import '../../services/event_service.dart';
 import 'event_detail_screen.dart';
 import 'profile_screen.dart';
 
 class EventListScreen extends StatefulWidget {
-  const EventListScreen({super.key});
+  const EventListScreen({Key? key}) : super(key: key);
 
   @override
   _EventListScreenState createState() => _EventListScreenState();
@@ -47,9 +46,13 @@ class _EventListScreenState extends State<EventListScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
+          }
+
+          if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No events found'));
           }
 
@@ -61,7 +64,13 @@ class _EventListScreenState extends State<EventListScreen> {
                 margin: const EdgeInsets.all(8.0),
                 child: ListTile(
                   leading: event.imageUrl.isNotEmpty
-                      ? Image.network(event.imageUrl, width: 50, height: 50)
+                      ? Image.network(
+                          event.imageUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.error),
+                        )
                       : const Icon(Icons.event),
                   title: Text(event.title),
                   subtitle: Text('${event.date} • ${event.location}'),

@@ -1,19 +1,27 @@
-// screens/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
-import '../services/storage_service.dart';
-import '../models/event.dart';
+import '../../models/event.dart';
+import '../../services/auth_service.dart';
+import '../../services/storage_service.dart';
+import '../event_detail_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final userEmail = Provider.of<AuthService>(context).currentUserEmail;
-    final registeredEvents = userEmail != null
-        ? Provider.of<StorageService>(context).getRegisteredEvents(userEmail)
-        : <Event>[];
+    final authService = Provider.of<AuthService>(context);
+    final storageService = Provider.of<StorageService>(context);
+
+    if (authService.currentUser == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please login to view profile')),
+      );
+    }
+
+    final registeredEvents = storageService.getRegisteredEvents(
+      authService.currentUser!.email,
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Profile')),
@@ -23,36 +31,43 @@ class ProfileScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Email: $userEmail',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Email: ${authService.currentUser!.email}',
+              style: Theme.of(context).textTheme.headline6,
             ),
             const SizedBox(height: 20),
             Text(
               'Registered Events:',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context).textTheme.subtitle1,
             ),
             const Divider(),
-            if (registeredEvents.isEmpty)
-              const Text('No events registered yet')
-            else
-              Expanded(
-                child: ListView.builder(
-                  itemCount: registeredEvents.length,
-                  itemBuilder: (context, index) {
-                    final event = registeredEvents[index];
-                    return ListTile(
-                      title: Text(event.title),
-                      subtitle: Text(event.date),
-                    );
-                  },
-                ),
-              ),
+            Expanded(
+              child: registeredEvents.isEmpty
+                  ? const Center(child: Text('No events registered yet'))
+                  : ListView.builder(
+                      itemCount: registeredEvents.length,
+                      itemBuilder: (context, index) {
+                        final event = registeredEvents[index];
+                        return ListTile(
+                          title: Text(event.title),
+                          subtitle: Text(event.date),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EventDetailScreen(event: event),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+            ),
             const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  Provider.of<AuthService>(context, listen: false).logout();
-                  Navigator.pushReplacementNamed(context, '/login');
+                  authService.logout();
                 },
                 child: const Text('Logout'),
               ),

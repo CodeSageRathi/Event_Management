@@ -1,18 +1,31 @@
-// services/auth_service.dart
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/user.dart';
 
 class AuthService with ChangeNotifier {
-  bool _isAuthenticated = false;
-  String? _currentUserEmail;
+  final SharedPreferences prefs;
+  User? _currentUser;
 
-  bool get isAuthenticated => _isAuthenticated;
-  String? get currentUserEmail => _currentUserEmail;
+  AuthService({required this.prefs}) {
+    _loadUserFromPrefs();
+  }
+
+  bool get isAuthenticated => _currentUser != null;
+  User? get currentUser => _currentUser;
+
+  void _loadUserFromPrefs() {
+    final email = prefs.getString('userEmail');
+    if (email != null) {
+      _currentUser = User(email: email);
+      notifyListeners();
+    }
+  }
 
   Future<void> login(String email, String password) async {
-    // Dummy authentication
+    // Dummy validation
     if (email.isNotEmpty && password.isNotEmpty) {
-      _isAuthenticated = true;
-      _currentUserEmail = email;
+      _currentUser = User(email: email);
+      await prefs.setString('userEmail', email);
       notifyListeners();
     } else {
       throw Exception('Invalid credentials');
@@ -21,96 +34,14 @@ class AuthService with ChangeNotifier {
 
   Future<void> signup(String email, String password) async {
     // Dummy signup
-    _isAuthenticated = true;
-    _currentUserEmail = email;
+    _currentUser = User(email: email);
+    await prefs.setString('userEmail', email);
     notifyListeners();
   }
 
-  void logout() {
-    _isAuthenticated = false;
-    _currentUserEmail = null;
+  Future<void> logout() async {
+    _currentUser = null;
+    await prefs.remove('userEmail');
     notifyListeners();
-  }
-}
-
-// screens/auth/login_screen.dart
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../services/auth_service.dart';
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter email';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter password';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    try {
-                      await Provider.of<AuthService>(context, listen: false)
-                          .login(
-                        _emailController.text,
-                        _passwordController.text,
-                      );
-                      Navigator.pushReplacementNamed(context, '/events');
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString())),
-                      );
-                    }
-                  }
-                },
-                child: const Text('Login'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/signup');
-                },
-                child: const Text('Create new account'),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
